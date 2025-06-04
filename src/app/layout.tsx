@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { UrqlProvider } from "@/components/UrqlProvider";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <UrqlProvider>
         <body>{children}</body>
+        <Toaster />
       </UrqlProvider>
     </html>
   );
