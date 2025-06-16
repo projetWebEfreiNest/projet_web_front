@@ -1,9 +1,11 @@
 export interface User {
-  id: string;
+  id: number;
+  name: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  token: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
 }
 
 export interface LoginCredentials {
@@ -15,8 +17,8 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  confirmPassword: string;
+  name: string;
   acceptTerms: boolean;
 }
 
@@ -25,4 +27,5 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  token: string | null;
 }

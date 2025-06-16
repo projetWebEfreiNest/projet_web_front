@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -12,12 +13,19 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthViewModel } from "@/lib/viewmodels/authViewModel";
 import { LoginCredentials, RegisterCredentials } from "@/lib/models/auth";
+import {
+  validatePassword,
+  validatePasswordMatch,
+} from "@/lib/utils/passwordValidation";
 
 export default function Page() {
+  const router = useRouter();
+
   const [loginForm, setLoginForm] = useState<LoginCredentials>({
     email: "",
     password: "",
@@ -27,10 +35,13 @@ export default function Page() {
   const [registerForm, setRegisterForm] = useState<RegisterCredentials>({
     email: "",
     password: "",
-    firstName: "",
-    lastName: "",
+    confirmPassword: "",
+    name: "",
     acceptTerms: false,
   });
+
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string>("");
 
   const { login, register, isLoading, error } = useAuthViewModel();
 
@@ -58,28 +69,68 @@ export default function Page() {
         ? "email"
         : id === "password-register"
           ? "password"
-          : id === "prenom"
-            ? "firstName"
-            : id === "nom"
-              ? "lastName"
+          : id === "confirm-password-register"
+            ? "confirmPassword"
+            : id === "name"
+              ? "name"
               : id === "terms"
                 ? "acceptTerms"
                 : "";
 
-    setRegisterForm({
+    const updatedForm = {
       ...registerForm,
       [fieldName]: type === "checkbox" ? checked : value,
-    });
+    };
+
+    setRegisterForm(updatedForm);
+
+    if (fieldName === "password") {
+      const validation = validatePassword(value);
+      setPasswordErrors(validation.errors);
+    }
+
+    if (fieldName === "confirmPassword" || fieldName === "password") {
+      const passwordToCheck =
+        fieldName === "password" ? value : updatedForm.password;
+      const confirmPasswordToCheck =
+        fieldName === "confirmPassword" ? value : updatedForm.confirmPassword;
+
+      if (
+        confirmPasswordToCheck &&
+        !validatePasswordMatch(passwordToCheck, confirmPasswordToCheck)
+      ) {
+        setConfirmPasswordError("Les mots de passe ne correspondent pas");
+      } else {
+        setConfirmPasswordError("");
+      }
+    }
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login(loginForm);
+    login(loginForm, router);
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    register(registerForm);
+
+    const passwordValidation = validatePassword(registerForm.password);
+    const passwordsMatch = validatePasswordMatch(
+      registerForm.password,
+      registerForm.confirmPassword
+    );
+
+    setPasswordErrors(passwordValidation.errors);
+
+    if (!passwordsMatch) {
+      setConfirmPasswordError("Les mots de passe ne correspondent pas");
+    } else {
+      setConfirmPasswordError("");
+    }
+
+    if (passwordValidation.isValid && passwordsMatch) {
+      register(registerForm, router);
+    }
   };
 
   return (
@@ -150,9 +201,8 @@ export default function Page() {
                           Mot de passe oublié?
                         </a>
                       </div>
-                      <Input
+                      <PasswordInput
                         id="password-login"
-                        type="password"
                         value={loginForm.password}
                         onChange={handleLoginChange}
                         required
@@ -188,27 +238,15 @@ export default function Page() {
                   className="transition-all duration-300 animate-in fade-in-0"
                 >
                   <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="prenom">Prénom</Label>
-                        <Input
-                          id="prenom"
-                          placeholder="Jean"
-                          value={registerForm.firstName}
-                          onChange={handleRegisterChange}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="nom">Nom</Label>
-                        <Input
-                          id="nom"
-                          placeholder="Dupont"
-                          value={registerForm.lastName}
-                          onChange={handleRegisterChange}
-                          required
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nom complet</Label>
+                      <Input
+                        id="name"
+                        placeholder="Jean Dupont"
+                        value={registerForm.name}
+                        onChange={handleRegisterChange}
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email-register">Email</Label>
@@ -223,13 +261,36 @@ export default function Page() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password-register">Mot de passe</Label>
-                      <Input
+                      <PasswordInput
                         id="password-register"
-                        type="password"
                         value={registerForm.password}
                         onChange={handleRegisterChange}
                         required
                       />
+                      {passwordErrors.length > 0 && (
+                        <div className="text-sm text-red-600 space-y-1">
+                          {passwordErrors.map((error, index) => (
+                            <div key={index}>{error}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password-register">
+                        Confirmer le mot de passe
+                      </Label>
+                      <Input
+                        id="confirm-password-register"
+                        type="password"
+                        value={registerForm.confirmPassword}
+                        onChange={handleRegisterChange}
+                        required
+                      />
+                      {confirmPasswordError && (
+                        <div className="text-sm text-red-600">
+                          {confirmPasswordError}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -256,7 +317,12 @@ export default function Page() {
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={isLoading || !registerForm.acceptTerms}
+                      disabled={
+                        isLoading ||
+                        !registerForm.acceptTerms ||
+                        passwordErrors.length > 0 ||
+                        confirmPasswordError !== ""
+                      }
                     >
                       {isLoading ? "Inscription en cours..." : "S'inscrire"}
                     </Button>

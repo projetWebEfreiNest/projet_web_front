@@ -1,40 +1,82 @@
-import axios from "axios";
-import { LoginCredentials, RegisterCredentials, User } from "../models/auth";
-import { API_URL } from "../const";
+import { Client } from "urql";
+import {
+  LoginCredentials,
+  RegisterCredentials,
+  AuthResponse,
+} from "../models/auth";
+import { LOGIN_MUTATION, REGISTER_MUTATION } from "../graphql/auth";
 
-export const authService = {
-  async login(credentials: LoginCredentials): Promise<User> {
+class AuthService {
+  private client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async login(credentials: LoginCredentials): Promise<string> {
     try {
-      const response = await axios.post(`${API_URL}/login`, credentials);
-      return response.data;
+      const result = await this.client
+        .mutation(LOGIN_MUTATION, {
+          email: credentials.email,
+          password: credentials.password,
+        })
+        .toPromise();
+
+      if (result.error) {
+        throw new Error(result.error.message || "Échec de la connexion");
+      }
+
+      if (!result.data?.login) {
+        throw new Error("Aucun token reçu du serveur");
+      }
+
+      return result.data.login;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        throw new Error(error.response.data.message || "Échec de la connexion");
+      if (error instanceof Error) {
+        throw error;
       }
       throw new Error("Erreur de connexion au serveur");
     }
-  },
+  }
 
-  async register(credentials: RegisterCredentials): Promise<User> {
+  async register(credentials: RegisterCredentials): Promise<string> {
     try {
-      const response = await axios.post(`${API_URL}/register`, credentials);
-      return response.data;
+      const createUserInput = {
+        email: credentials.email,
+        password: credentials.password,
+        name: credentials.name,
+      };
+
+      const result = await this.client
+        .mutation(REGISTER_MUTATION, {
+          createUserInput,
+        })
+        .toPromise();
+
+      if (result.error) {
+        throw new Error(result.error.message || "Échec de l'inscription");
+      }
+
+      if (!result.data?.createUser?.access_token) {
+        throw new Error("Aucun token reçu du serveur");
+      }
+
+      return result.data.createUser.access_token;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        throw new Error(
-          error.response.data.message || "Échec de l'inscription"
-        );
+      if (error instanceof Error) {
+        throw error;
       }
       throw new Error("Erreur de connexion au serveur");
     }
-  },
+  }
 
   async logout(): Promise<void> {
     try {
-      await axios.post(`${API_URL}/logout`);
-      return;
+      return Promise.resolve();
     } catch (error) {
       throw new Error("Erreur lors de la déconnexion");
     }
-  },
-};
+  }
+}
+
+export const createAuthService = (client: Client) => new AuthService(client);
