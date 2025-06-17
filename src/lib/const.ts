@@ -1,7 +1,7 @@
 export const API_CONFIG = {
   GRAPHQL_URL:
     process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:3000/graphql",
-  REST_BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api",
+  REST_BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/",
   REQUEST_TIMEOUT: 10000,
   COOKIE_CONFIG: {
     TOKEN_NAME: "token",
