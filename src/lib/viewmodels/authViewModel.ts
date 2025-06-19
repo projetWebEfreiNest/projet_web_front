@@ -8,6 +8,10 @@ import {
 import { createAuthService } from "../services/authService";
 import { toast } from "sonner";
 import { getUrqlClient } from "../urql/client";
+
+interface Router {
+  push: (path: string) => void;
+}
 import { API_CONFIG } from "../const";
 
 const setCookie = (name: string, value: string, days: number = 7) => {
@@ -22,15 +26,18 @@ const deleteCookie = (name: string) => {
 
 export const useAuthViewModel = create<
   AuthState & {
-    login: (credentials: LoginCredentials, router?: any) => Promise<void>;
-    register: (credentials: RegisterCredentials, router?: any) => Promise<void>;
-    logout: (router?: any) => Promise<void>;
+    login: (credentials: LoginCredentials, router?: Router) => Promise<void>;
+    register: (
+      credentials: RegisterCredentials,
+      router?: Router
+    ) => Promise<void>;
+    logout: (router?: Router) => Promise<void>;
     clearError: () => void;
     initializeAuth: () => void;
   }
 >()(
   persist(
-    (set, _get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -60,7 +67,7 @@ export const useAuthViewModel = create<
 
           toast.success("Connexion réussie");
 
-          if (router) {
+          if (router && typeof router.push === "function") {
             router.push("/");
           } else {
             window.location.href = "/";
@@ -94,7 +101,7 @@ export const useAuthViewModel = create<
 
           toast.success("Inscription réussie");
 
-          if (router) {
+          if (router && typeof router.push === "function") {
             router.push("/");
           } else {
             window.location.href = "/";
@@ -124,7 +131,7 @@ export const useAuthViewModel = create<
 
           toast.success("Déconnexion réussie");
 
-          if (router) {
+          if (router && typeof router.push === "function") {
             router.push("/onboarding");
           } else {
             window.location.href = "/onboarding";

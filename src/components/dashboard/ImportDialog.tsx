@@ -35,7 +35,7 @@ export function ImportDialog() {
       toast.success(`${selectedFiles.length} factures importées avec succès`);
       setSelectedFiles([]);
       setOpen(false);
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de l'importation des factures");
     }
   };

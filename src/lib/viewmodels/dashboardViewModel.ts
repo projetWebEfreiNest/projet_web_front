@@ -55,7 +55,7 @@ export const useDashboardViewModel = create<
         expenseData: mockExpenseData,
         isLoading: false,
       });
-    } catch (error) {
+    } catch {
       set({
         isLoading: false,
         error: "Erreur lors du chargement des données du tableau de bord",

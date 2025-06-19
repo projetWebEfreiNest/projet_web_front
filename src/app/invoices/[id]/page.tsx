@@ -174,7 +174,7 @@ export default function InvoiceDetailsPage() {
               <div className="flex justify-between">
                 {" "}
                 <span className="text-muted-foreground">
-                  Nombre d'éléments
+                  Nombre d&apos;éléments
                 </span>{" "}
                 <span>{currentInvoice.invoiceData?.length || 0}</span>{" "}
               </div>{" "}

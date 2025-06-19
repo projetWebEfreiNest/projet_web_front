@@ -25,7 +25,7 @@ export function RevenueChart() {
       <CardHeader>
         <CardTitle>Revenus mensuels</CardTitle>
         <CardDescription>
-          Vue d'ensemble des revenus sur l'année courante
+          Vue d&apos;ensemble des revenus sur l&apos;année courante
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-2">

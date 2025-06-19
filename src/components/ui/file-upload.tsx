@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection, FileError } from "react-dropzone";
 import { Upload, X, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,15 +34,19 @@ export function FileUpload({
   const [error, setError] = useState<string>("");
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: any[]) => {
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError("");
 
       if (rejectedFiles.length > 0) {
         const rejection = rejectedFiles[0];
-        if (rejection.errors.some((e: any) => e.code === "file-too-large")) {
+        if (
+          rejection.errors.some((e: FileError) => e.code === "file-too-large")
+        ) {
           setError("Le fichier ne peut pas dépasser 10MB");
         } else if (
-          rejection.errors.some((e: any) => e.code === "file-invalid-type")
+          rejection.errors.some(
+            (e: FileError) => e.code === "file-invalid-type"
+          )
         ) {
           setError("Type de fichier non supporté");
         } else {

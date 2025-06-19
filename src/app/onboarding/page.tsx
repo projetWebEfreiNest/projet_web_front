@@ -43,7 +43,7 @@ export default function Page() {
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>("");
 
-  const { login, register, isLoading, error } = useAuthViewModel();
+  const { login, register, isLoading } = useAuthViewModel();
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type, checked } = e.target;
@@ -308,9 +308,9 @@ export default function Page() {
                         htmlFor="terms"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        J'accepte les{" "}
+                        J&apos;accepte les{" "}
                         <a href="#" className="text-primary hover:underline">
-                          conditions d'utilisation
+                          conditions d&apos;utilisation
                         </a>
                       </label>
                     </div>
@@ -333,8 +333,8 @@ export default function Page() {
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              En continuant, vous acceptez nos conditions d'utilisation et notre
-              politique de confidentialité.
+              En continuant, vous acceptez nos conditions d&apos;utilisation et
+              notre politique de confidentialité.
             </p>
           </CardFooter>
         </Card>

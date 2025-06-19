@@ -1,9 +1,5 @@
 import { Client } from "urql";
-import {
-  LoginCredentials,
-  RegisterCredentials,
-  AuthResponse,
-} from "../models/auth";
+import { LoginCredentials, RegisterCredentials } from "../models/auth";
 import { LOGIN_MUTATION, REGISTER_MUTATION } from "../graphql/auth";
 
 class AuthService {
@@ -73,7 +69,7 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       return Promise.resolve();
-    } catch (error) {
+    } catch {
       throw new Error("Erreur lors de la déconnexion");
     }
   }
